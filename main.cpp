@@ -11,7 +11,12 @@ struct Participante
 	int AnoIngressao;
 	string Curso;
 	//1-DSM, 2-SI, 3-GE
+	
+	//funcionalidades do sistema
 	bool Professor;
+	bool Aluno;
+	bool funcionario;
+	int CursosEscolhidos[3];
 };
 
 void MenuDeOpcoes();
@@ -45,10 +50,10 @@ void MenuDeOpcoes()
         cout << "1. Inserir Participante" << endl;
         cout << "2. Editar Participante" << endl;
         cout << "3. Carregar Participantes" << endl;
-        cout << "4. Gravar Participantes" << endl;
+        cout << "4. Editar Participantes" << endl;
         cout << "5. Cadastrar Contribuição" << endl;
-        cout << "6. Gravar Contribuintes" << endl;
-        cout << "7. Gravar Contribuintes por Curso" << endl;
+        cout << "6. Editar Contribuintes" << endl;
+        cout << "7. Editar Contribuintes por Curso" << endl;
         cout << "8. Sair" << endl;
         cout << "Opção: ";
         cin >> opcao;
@@ -71,10 +76,12 @@ void MenuDeOpcoes()
         			switch(AlunoFuncionario)
         			{
         				case 1:
+        					system("cls");
         					InsereParticipanteAluno(ptrParticipante);
         				break;
         				case 2:
-        				
+        					system("cls");
+        					InsereParticipanteProfessor(ptrParticipante);
         				break;
         				case 3:
         				break;
@@ -209,9 +216,10 @@ void InsereParticipanteAluno(Participante* I)
 
 void InsereParticipanteProfessor(Participante *I)
 {
-	I->Professor = true;
 	bool enquanto = true;
-	int cursoOpcao;
+	int cursos;
+	int professor;
+	int cursoOpcao = 0;
 	
 	time_t t = time(0);   
     tm* now = localtime(&t);  
@@ -222,4 +230,122 @@ void InsereParticipanteProfessor(Participante *I)
 	cout << "Informe seu nome: ";
 	cin >> I->Nome;
 	system("cls");
+	do
+	{
+		cout << "Em que ano você entrou na FATEC: ";
+		cin >> I->AnoIngressao;
+		
+		if(I->AnoIngressao > currentYear)
+		{
+			system("cls");
+			cout << "O ano informado não deve ser maior que o ano atual" << endl;
+			enquanto = true;
+		}
+		else
+		{
+			system("cls");
+			enquanto = false;
+		}
+	}
+	while(enquanto);
+	do
+	{
+		cout << "Você é professor?" << endl;
+		cout << "[1]Sim" << endl;
+		cout << "[2]Não" << endl;
+		cout << "Sua resposta aqui: ";
+		cin >> professor;
+		
+		if(professor == 1)
+		{
+			I->Aluno = false;
+			I->funcionario = false;
+			I->Professor = true;
+			enquanto = false;
+			system("cls");
+		}
+		else if(professor == 2)
+		{
+			I->Professor = false;
+			I->Aluno = false;
+			I->funcionario = true;
+			enquanto = false;
+			system("cls");
+		}
+		else
+		{
+			system("cls");
+			cout << "Escolha uma opção válida" << endl;
+			enquanto = true;
+		}
+		
+	}
+	while(enquanto);
+	
+	if(I->Professor == true) {
+        cout << "Para quantos cursos você dá aula: ";
+        cin >> I->Semestre;
+
+        int numCursos = I->Semestre;
+        int cursosDisponiveis[3] = {1, 2, 3};
+        int cursosEscolhidos[3] = {0, 0, 0};
+
+        do
+		{
+            system("cls");
+            cout << "Escolha os cursos" << endl;
+            cout << endl;
+            for (int i = 0; i < 3; i++) {
+                if (cursosDisponiveis[i] != 0) {
+                    switch (cursosDisponiveis[i]) {
+                        case 1: cout << "[1] DSM "; break;
+                        case 2: cout << "[2] SI "; break;
+                        case 3: cout << "[3] GE "; break;
+                    }
+                }
+            }
+            cout << endl << "Curso: ";
+            cin >> cursoOpcao;
+
+            bool opcaoValida = false;
+            for (int i = 0; i < 3; i++) 
+			{
+                if (cursosDisponiveis[i] == cursoOpcao) 
+				{
+                    opcaoValida = true;
+                    cursosEscolhidos[i] = cursoOpcao;
+                    cursosDisponiveis[i] = 0; 
+                    numCursos--;
+                }
+            }
+
+            if (!opcaoValida) 
+			{
+                cout << "Opção inválida. Tente novamente." << endl;
+                system("pause");
+            }
+        }
+        while(numCursos > 0);
+		
+        
+        for (int i = 0; i < 3; i++) 
+		{
+            I->CursosEscolhidos[i] = cursosEscolhidos[i];
+        }
+
+        cout << "Cursos selecionados: ";
+        for (int i = 0; i < 3; i++) 
+		{
+            if (cursosEscolhidos[i] != 0) 
+			{
+                switch (cursosEscolhidos[i]) 
+				{
+                    case 1: cout << "DSM "; break;
+                    case 2: cout << "SI "; break;
+                    case 3: cout << "GE "; break;
+                }
+            }
+        }
+        cout << endl;
+    }
 }
