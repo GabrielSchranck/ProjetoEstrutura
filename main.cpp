@@ -73,15 +73,19 @@ void MenuDeOpcoes()
 	        		cout << "Sua resposta: "; 
 	        		cin >> AlunoFuncionario;
 	        		
+	        		if(AlunoFuncionario = 3)
+	        		
         			switch(AlunoFuncionario)
         			{
         				case 1:
         					system("cls");
         					InsereParticipanteAluno(ptrParticipante);
+        					AlunoFuncionario = 3;
         				break;
         				case 2:
         					system("cls");
         					InsereParticipanteProfessor(ptrParticipante);
+        					AlunoFuncionario = 3;
         				break;
         				case 3:
         				break;
@@ -278,74 +282,11 @@ void InsereParticipanteProfessor(Participante *I)
 			cout << "Escolha uma opção válida" << endl;
 			enquanto = true;
 		}
-		
 	}
 	while(enquanto);
 	
-	if(I->Professor == true) {
-        cout << "Para quantos cursos você dá aula: ";
-        cin >> I->Semestre;
-
-        int numCursos = I->Semestre;
-        int cursosDisponiveis[3] = {1, 2, 3};
-        int cursosEscolhidos[3] = {0, 0, 0};
-
-        do
-		{
-            system("cls");
-            cout << "Escolha os cursos" << endl;
-            cout << endl;
-            for (int i = 0; i < 3; i++) {
-                if (cursosDisponiveis[i] != 0) {
-                    switch (cursosDisponiveis[i]) {
-                        case 1: cout << "[1] DSM "; break;
-                        case 2: cout << "[2] SI "; break;
-                        case 3: cout << "[3] GE "; break;
-                    }
-                }
-            }
-            cout << endl << "Curso: ";
-            cin >> cursoOpcao;
-
-            bool opcaoValida = false;
-            for (int i = 0; i < 3; i++) 
-			{
-                if (cursosDisponiveis[i] == cursoOpcao) 
-				{
-                    opcaoValida = true;
-                    cursosEscolhidos[i] = cursoOpcao;
-                    cursosDisponiveis[i] = 0; 
-                    numCursos--;
-                }
-            }
-
-            if (!opcaoValida) 
-			{
-                cout << "Opção inválida. Tente novamente." << endl;
-                system("pause");
-            }
-        }
-        while(numCursos > 0);
-		
-        
-        for (int i = 0; i < 3; i++) 
-		{
-            I->CursosEscolhidos[i] = cursosEscolhidos[i];
-        }
-
-        cout << "Cursos selecionados: ";
-        for (int i = 0; i < 3; i++) 
-		{
-            if (cursosEscolhidos[i] != 0) 
-			{
-                switch (cursosEscolhidos[i]) 
-				{
-                    case 1: cout << "DSM "; break;
-                    case 2: cout << "SI "; break;
-                    case 3: cout << "GE "; break;
-                }
-            }
-        }
-        cout << endl;
-    }
+    system("cls");
+	cout << "Integrante Inserido com sucesso" << endl;
+	system("Pause");
+    
 }
