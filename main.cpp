@@ -1,292 +1,300 @@
 #include <iostream>
-#include <locale>
+#include <fstream>
 #include <ctime>
+#include <cstdlib>
+#include <locale>
+#include <sstream>
+#include <string>
+
 using namespace std;
 
-struct Participante
-{
-	int ID;
-	string Nome;
-	int Semestre;
-	int AnoIngressao;
-	string Curso;
-	//1-DSM, 2-SI, 3-GE
-	
-	//funcionalidades do sistema
-	bool Professor;
-	bool Aluno;
-	bool funcionario;
-	int CursosEscolhidos[3];
+
+struct Participante {
+    int ID;
+    string Nome;
+    int Semestre;
+    int AnoIngressao;
+    string Curso;
+    Participante* prox;
 };
 
-void MenuDeOpcoes();
-void InsereParticipanteAluno(Participante *I);
-void InsereParticipanteProfessor(Participante *I);
 
-int main(int argc, char** argv) 
-{
+struct Fila {
+    Participante* frente;
+    Participante* tras;
+};
+
+
+void initializeQueue(Fila *f);
+bool isEmpty(Fila *f);
+void enqueue(Fila *f, Participante* novoParticipante);
+void dequeue(Fila *f);
+void displayQueue(Fila *f);
+void destroyQueue(Fila *f);
+void salvarDados(Fila *f, const string& nomeArquivo);
+void carregarDados(Fila *f, const string& nomeArquivo);
+void InsereParticipanteAluno(Participante* I, int nextID);
+int obterUltimoID(const string& nomeArquivo);
+
+
+int main() {
 	setlocale(LC_ALL, "Portuguese");
-	MenuDeOpcoes();
-	
-	
-	return 0;
-}
+    Fila filaParticipantes;
+    initializeQueue(&filaParticipantes);
 
-void MenuDeOpcoes()
-{
-	int opcao;
-	Participante participante;  
-    Participante* ptrParticipante = &participante;
-    int AlunoFuncionario;
-	
-	
-	do
-	{
-		system("cls");
-		cout << endl;
-		cout << "Bem vindo(a) à Turma do Café" << endl;
+    int ultimoID = obterUltimoID("participantes.txt");
+    if (ultimoID == -1) {
+        cout << "Erro ao obter o último ID do arquivo." << endl;
+        return 1; 
+    }
+    
+   
+    static int nextID = ultimoID + 1;
+
+    int opcao;
+    do {
+        system("cls");
         cout << endl;
-		cout << "Escolha uma das opções" << endl;
-        cout << "1. Inserir Participante" << endl;
-        cout << "2. Editar Participante" << endl;
-        cout << "3. Carregar Participantes" << endl;
-        cout << "4. Editar Participantes" << endl;
-        cout << "5. Cadastrar Contribuição" << endl;
-        cout << "6. Editar Contribuintes" << endl;
-        cout << "7. Editar Contribuintes por Curso" << endl;
-        cout << "8. Sair" << endl;
+        cout << "Bem-vindo à Turma do Café" << endl;
+        cout << "Escolha uma opção:" << endl;
+        cout << "1. Adicionar Participante" << endl;
+        cout << "2. Visualizar Participantes" << endl;
+        cout << "3. Remover Participante" << endl;
+        cout << "4. Salvar Dados em Arquivo" << endl;
+        cout << "5. Carregar Dados de Arquivo" << endl;
+        cout << "6. Sair" << endl;
         cout << "Opção: ";
         cin >> opcao;
         cout << endl;
-        
-        
-        switch(opcao)
-        {
-        	case 1:
-        		do
-        		{
-	        		system("cls");
-	        		cout << "Você é aluno ou funcionário?" << endl;
-	        		cout << "[1]Aluno" << endl;
-	        		cout << "[2]Funcionário" << endl;
-	        		cout << "[3]Voltar" << endl;
-	        		cout << "Sua resposta: "; 
-	        		cin >> AlunoFuncionario;
-	        		
-	        		if(AlunoFuncionario = 3)
-	        		
-        			switch(AlunoFuncionario)
-        			{
-        				case 1:
-        					system("cls");
-        					InsereParticipanteAluno(ptrParticipante);
-        					AlunoFuncionario = 3;
-        				break;
-        				case 2:
-        					system("cls");
-        					InsereParticipanteProfessor(ptrParticipante);
-        					AlunoFuncionario = 3;
-        				break;
-        				case 3:
-        				break;
-        				default:
-        					system("cls");
-        					cout << "Você deve escolher uma das opções" << endl;
-        					system("pause");
-					}
-				}
-        		while(AlunoFuncionario != 3);
-        		
-        		
-        		break;
-        	case 2:
-        		break;
-        	case 3:
-        		break;
-        	case 4:
-        		break;
-        	case 5:
-        		break;
-        	case 6:
-        		break;
-        	case 7:
-        		break;
-        	case 8:
-        		cout << "Saindo..." << endl;
-        		break;
-        	default:
+
+        switch(opcao) {
+            case 1: {
+            	system("cls");
+                Participante* novoParticipante = new Participante;
+                InsereParticipanteAluno(novoParticipante, nextID);
+                enqueue(&filaParticipantes, novoParticipante);
+                nextID++; 
+                break;
+            }
+            case 2:
+                displayQueue(&filaParticipantes);
+                break;
+            case 3:
+                dequeue(&filaParticipantes);
+                break;
+            case 4:
+                salvarDados(&filaParticipantes, "participantes.txt");
+                break;
+            case 5:
+                carregarDados(&filaParticipantes, "participantes.txt");
+                break;
+            case 6:
+                cout << "Saindo..." << endl;
+                break;
+            default:
                 cout << "Opção inválida! Tente novamente." << endl;
-                system("pause");
-		}
-	}
-	while(opcao != 8);
+        }
+
+        system("pause");
+    } while(opcao != 6);
+
+    destroyQueue(&filaParticipantes);
+    return 0;
 }
 
-void InsereParticipanteAluno(Participante* I)
-{
-	I->Professor = false;
-	bool enquanto = true;
-	int cursoOpcao;
-	
-	time_t t = time(0);   
-    tm* now = localtime(&t);  
-    int currentYear = now->tm_year + 1900;  
-	
-	cout << "Cadastro de Participante" << endl;
-	cout << endl;
-	cout << "Informe seu nome: ";
-	cin >> I->Nome;
-	system("cls");
-	do
-	{
-		enquanto = true;
-		cout << "Informe seu semestre: ";
-		cin >> I->Semestre;
-		
-		if(I->Semestre < 1 || I->Semestre > 6)
-		{
-			system("cls");
-			cout << "Você deve informar um semestre entre 1 e 6" << endl;
-			enquanto = true;		
-		}
-		else if(I->Semestre >= 1 || I->Semestre <=6)
-		{
-			enquanto = false;
-			system("cls");
-		}
-	}
-	while(enquanto);
 
-	do
-	{
-		cout << "Insira o ano que você iniciou na FATEC: ";
-		cin >> I->AnoIngressao;
-		
-		if(I->AnoIngressao < currentYear - 5 || I->AnoIngressao > currentYear)
-		{
-			system("cls");
-			cout << "Ano de iniciação inválido, informe um ano entre " << currentYear - 5 << " e " << currentYear << endl;
-			enquanto = true;
-		}
-		else if(I->AnoIngressao >= currentYear - 5 || I->AnoIngressao <= currentYear)
-		{
-			enquanto = false;
-			system("cls");
-		}
-	}
-	while(enquanto);
-	
-	do
-	{
-		
-		cout << "Escolha o seu curso: " << endl;
-		cout << "[1] DSM     [2] SI     [3] GE" << endl;
-		cout << "Curso: ";
-		cin >> cursoOpcao;
-	
-		switch(cursoOpcao) 
-		{
-			case 1:
-				I->Curso = "DSM";
-				enquanto = false;
-				system("cls");
-			break;
-			case 2:
-				I->Curso = "SI";
-				enquanto = false;
-				system("cls");
-			break;
-			case 3:
-				I->Curso = "GE";
-				enquanto = false;
-				system("cls");
-			break;
-			default:
-				system("cls");
-				cout << "Número inválido" << endl;
-				I->Curso = "Indefinido";
-				enquanto = true;
-		}
-		
-	}
-	while(enquanto);
-	cout << "Participante cadastrado com sucesso!" << endl;
-	cout << endl;
-	cout <<  I->Nome << " do " << I->Semestre << "° semestre de " << I->Curso << ", Ano de integração à FATEC: " << I->AnoIngressao << endl;
-	cout << endl;
-	system("pause");
-	cout << endl;
+void initializeQueue(Fila *f) {
+    f->frente = NULL;
+    f->tras = NULL;
 }
 
-void InsereParticipanteProfessor(Participante *I)
-{
-	bool enquanto = true;
-	int cursos;
-	int professor;
-	int cursoOpcao = 0;
-	
-	time_t t = time(0);   
-    tm* now = localtime(&t);  
-    int currentYear = now->tm_year + 1900;  
-	
-	cout << "Cadastro de Participante" << endl;
-	cout << endl;
-	cout << "Informe seu nome: ";
-	cin >> I->Nome;
-	system("cls");
-	do
-	{
-		cout << "Em que ano você entrou na FATEC: ";
-		cin >> I->AnoIngressao;
-		
-		if(I->AnoIngressao > currentYear)
-		{
-			system("cls");
-			cout << "O ano informado não deve ser maior que o ano atual" << endl;
-			enquanto = true;
-		}
-		else
-		{
-			system("cls");
-			enquanto = false;
-		}
-	}
-	while(enquanto);
-	do
-	{
-		cout << "Você é professor?" << endl;
-		cout << "[1]Sim" << endl;
-		cout << "[2]Não" << endl;
-		cout << "Sua resposta aqui: ";
-		cin >> professor;
-		
-		if(professor == 1)
-		{
-			I->Aluno = false;
-			I->funcionario = false;
-			I->Professor = true;
-			enquanto = false;
-			system("cls");
-		}
-		else if(professor == 2)
-		{
-			I->Professor = false;
-			I->Aluno = false;
-			I->funcionario = true;
-			enquanto = false;
-			system("cls");
-		}
-		else
-		{
-			system("cls");
-			cout << "Escolha uma opção válida" << endl;
-			enquanto = true;
-		}
-	}
-	while(enquanto);
-	
-    system("cls");
-	cout << "Integrante Inserido com sucesso" << endl;
-	system("Pause");
+bool isEmpty(Fila *f) {
+    return (f->frente == NULL);
+}
+
+void enqueue(Fila *f, Participante* novoParticipante) {
+    if (isEmpty(f)) {
+        f->frente = novoParticipante;
+    } else {
+        f->tras->prox = novoParticipante;
+    }
+    f->tras = novoParticipante;
+}
+
+void dequeue(Fila *f) {
+    if (!isEmpty(f)) {
+        Participante* temp = f->frente;
+        f->frente = f->frente->prox;
+        delete temp;
+    } else {
+        cout << "Erro: a fila está vazia." << endl;
+    }
+}
+
+void displayQueue(Fila *f) {
+    if (!isEmpty(f)) {
+        Participante* atual = f->frente;
+        cout << "Fila de Participantes:" << endl;
+        while (atual != NULL) {
+            cout << "ID: " << atual->ID << ", Nome: " << atual->Nome << ", Semestre: " << atual->Semestre << ", Ano de Ingresso: " << atual->AnoIngressao << ", Curso: " << atual->Curso << endl;
+            atual = atual->prox;
+        }
+    } else {
+        cout << "A fila está vazia." << endl;
+    }
+}
+
+void destroyQueue(Fila *f) {
+    while (!isEmpty(f)) {
+        dequeue(f);
+    }
+}
+
+void salvarDados(Fila *f, const string& nomeArquivo) {
+    cout << "Tentando salvar dados em: " << nomeArquivo << endl;
+    ofstream arquivo(nomeArquivo.c_str(), ios::app); 
+    if (arquivo.is_open()) {
+        Participante* atual = f->frente;
+        while (atual != NULL) {
+            arquivo << atual->ID << "," << atual->Nome << "," << atual->Semestre << "," << atual->AnoIngressao << "," << atual->Curso << endl;
+            atual = atual->prox;
+        }
+        arquivo.close();
+        cout << "Dados salvos com sucesso em " << nomeArquivo << endl;
+    } else {
+        cout << "Erro ao abrir o arquivo " << nomeArquivo << endl;
+    }
+}
+
+void carregarDados(Fila *f, const string& nomeArquivo) {
+    ifstream arquivo(nomeArquivo.c_str());
+    if (arquivo.is_open()) {
+        int id, semestre, anoIngressao;
+        string nome, curso;
+        while (arquivo >> id >> nome >> semestre >> anoIngressao >> curso) {
+            Participante* novoParticipante = new Participante;
+            novoParticipante->ID = id;
+            novoParticipante->Nome = nome;
+            novoParticipante->Semestre = semestre;
+            novoParticipante->AnoIngressao = anoIngressao;
+            novoParticipante->Curso = curso;
+            novoParticipante->prox = NULL;
+            enqueue(f, novoParticipante);
+        }
+        arquivo.close();
+        cout << "Dados carregados com sucesso de " << nomeArquivo << endl;
+    } else {
+        cout << "Erro ao abrir o arquivo " << nomeArquivo << endl;
+    }
+}
+
+void InsereParticipanteAluno(Participante* I, int nextID) {
+    I->ID = nextID;
+
+    bool enquanto = true;
+    int cursoOpcao;
     
+    time_t t = time(0);   
+    tm* now = localtime(&t);  
+    int currentYear = now->tm_year + 1900;  
+    
+    cout << "Cadastro de Participante" << endl;
+    cout << endl;
+    cout << "Informe seu nome: ";
+    cin >> I->Nome;
+    system("cls");
+    do {
+        enquanto = true;
+        cout << "Informe seu semestre: ";
+        cin >> I->Semestre;
+        
+        if (I->Semestre < 1 || I->Semestre > 6) {
+            system("cls");
+            cout << "Você deve informar um semestre entre 1 e 6" << endl;
+            enquanto = true;        
+        } else {
+            enquanto = false;
+            system("cls");
+        }
+    } while(enquanto);
+
+    do {
+        cout << "Insira o ano que você iniciou na FATEC: ";
+        cin >> I->AnoIngressao;
+        
+        if (I->AnoIngressao < currentYear - 5 || I->AnoIngressao > currentYear) {
+            system("cls");
+            cout << "Ano de iniciação inválido, informe um ano entre " << currentYear - 5 << " e " << currentYear << endl;
+            enquanto = true;
+        } else {
+            enquanto = false;
+            system("cls");
+        }
+    } while(enquanto);
+    
+    do {
+        cout << "Escolha o seu curso: " << endl;
+        cout << "[1] DSM     [2] SI     [3] GE" << endl;
+        cout << "Curso: ";
+        cin >> cursoOpcao;
+    
+        switch(cursoOpcao) {
+            case 1:
+                I->Curso = "DSM";
+                enquanto = false;
+                system("cls");
+                break;
+            case 2:
+                I->Curso = "SI";
+                enquanto = false;
+                system("cls");
+                break;
+            case 3:
+                I->Curso = "GE";
+                enquanto = false;
+                system("cls");
+                break;
+            default:
+                system("cls");
+                cout << "Número inválido" << endl;
+                I->Curso = "Indefinido";
+                enquanto = true;
+        }
+    } while(enquanto);
+
+    cout << "Participante cadastrado com sucesso!" << endl;
+    system("pause");
+    system("cls");
+    cout << endl;
+    cout << "ID: " << I->ID << endl;
+    cout << I->Nome << " do " << I->Semestre << "° semestre de " << I->Curso << ", Ano de integração à FATEC: " << I->AnoIngressao << endl;
+    cout << endl;
 }
+
+int obterUltimoID(const string& nomeArquivo) {
+    ifstream arquivo(nomeArquivo.c_str());
+    if (arquivo.is_open()) {
+        int ultimoID = 0;
+        string linha;
+        while (getline(arquivo, linha)) {
+            if (!linha.empty()) {
+                istringstream ss(linha);
+                string token;
+                getline(ss, token, ',');
+                int id;
+                ss >> id; 
+                if (id > ultimoID) {
+                    ultimoID = id;
+                }
+            }
+        }
+        arquivo.close();
+        return ultimoID;
+    } else {
+        cout << "Erro ao abrir o arquivo " << nomeArquivo << endl;
+        return -1;
+    }
+}
+
+
+
