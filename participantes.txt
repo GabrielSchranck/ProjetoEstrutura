@@ -1,2 +1,30 @@
+ID: 1
+Nome: Gabriel
+Semestre: 2
+Ano de Ingressão: 2023
+Curso: DSM
 
+ID: 2
+Nome: Thais
+Semestre: 1
+Ano de Ingressão: 2024
+Curso: GE
+
+ID: 3
+Nome: Rose
+Semestre: 6
+Ano de Ingressão: 2021
+Curso: GE
+
+ID: 4
+Nome: Carlos
+Semestre: 6
+Ano de Ingressão: 2021
+Curso: SI
+
+ID: 5
+Nome: Teca
+Semestre: 4
+Ano de Ingressão: 2022
+Curso: GE
 

@@ -9,36 +9,65 @@
 using namespace std;
 
 struct Participante {
+	
     int ID;
     string Nome;
     int Semestre;
     int AnoIngressao;
     string Curso;
     Participante* prox;
+    //bool contribuinte = false;
+};
+
+struct Contribuinte {
+	
+	int IDParticipante;
+    int Mes;
+    int Ano;
+    float Valor;
+    Contribuinte* prox;
 };
 
 struct ListaParticipantes {
+	
     Participante* primeiro;
 };
 
+struct ListaContribuintes {
+    Contribuinte* primeiro;
+};
+
+void AdicionaContribuinte(ListaParticipantes *lista, ListaContribuintes *cont, int id);
 int PegaId(ListaParticipantes *lista);
 void AbrirArquivoTxt(ListaParticipantes *lista, const string& nomeArquivo);
+//void AbrirArquivoTxtContribuidores(ListaContribuintes* lista, const string& nomeArquivo);
 void initializeQueue(ListaParticipantes *lista);
+void initializeQueueCont(ListaContribuintes *lista);
 bool isEmpty(ListaParticipantes *lista);
+bool isEmptyContribuinte(ListaContribuintes *lista);
 void enqueue(ListaParticipantes *lista, Participante* novoParticipante);
+void enqueueContribuinte(ListaContribuintes *lista, Contribuinte* novoContribuinte);
 void dequeue(ListaParticipantes *lista);
+void dequeueContribuinte(ListaParticipantes *lista);
 void displayQueue(ListaParticipantes *lista);
+void displayContribuinte(ListaContribuintes *lista);
 void destroyQueue(ListaParticipantes *lista);
 void salvarDados(ListaParticipantes *lista, const string& nomeArquivo);
-void carregarDados(ListaParticipantes *lista, const string& nomeArquivo);
+void salvarDadosContribuidores(ListaContribuintes *lista, const string& nomeArquivo);
 void InsereParticipanteAluno(Participante* participante, int nextID);
 void editarParticipante(ListaParticipantes *lista, int id);
 
 int main() {
     setlocale(LC_ALL, "Portuguese");
-    ListaParticipantes listaParticipantes;
+    
+    ListaContribuintes listaContribuintes;
+    initializeQueueCont(&listaContribuintes);
+	
+	ListaParticipantes listaParticipantes;
     initializeQueue(&listaParticipantes);
+    
     AbrirArquivoTxt(&listaParticipantes, "participantes.txt");
+//	AbrirArquivoTxtContribuidores(&listaContribuintes, "participantes.txt");
 	
 	int idEditar = 0;
     int nextID = PegaId(&listaParticipantes) + 1;
@@ -46,6 +75,8 @@ int main() {
     {
     	nextID = 1;
 	}
+	int opcao5 = 0;
+	
     int opcao;
     do {
         system("cls");
@@ -56,8 +87,8 @@ int main() {
         cout << "2. Mostrar Participantes" << endl;
         cout << "3. Editar dados" << endl;
         cout << "4. Gravar Participantes" << endl;
-        cout << "5. " << endl;
-        cout << "6. " << endl;
+        cout << "5. Cadastrar contribuição" << endl;
+        cout << "6. Exibir contribuinte" << endl;
         cout << "Opção: ";
         cin >> opcao;
         cout << endl;
@@ -86,20 +117,99 @@ int main() {
                 salvarDados(&listaParticipantes, "participantes.txt");
                 break;
             case 5:
-                carregarDados(&listaParticipantes, "participantes.txt");
-                break;
+                system("cls");
+                
+                do
+                {
+                	displayQueue(&listaParticipantes);
+                	cout << endl;
+                	cout << "Para sair, digite [0]" << endl;
+                	cout << endl;
+                	cout << "Digite o ID do usuário: ";
+                	cin >> opcao5;
+                	if(opcao5 == 0)
+                	{
+                		system("cls");
+					}
+					else if(opcao5 != 0)
+					{
+						AdicionaContribuinte(&listaParticipantes, &listaContribuintes, opcao5);
+					}
+					system("cls");
+                	salvarDadosContribuidores(&listaContribuintes, "contribuintes.txt");
+                	
+				}
+                while(opcao5 != 0);
+                
+                
             case 6:
-                cout << "Saindo..." << endl;
+                system("cls");
+                displayContribuinte(&listaContribuintes);
                 break;
             default:
                 cout << "Opção inválida! Tente novamente." << endl;
         }
 
         system("pause");
-    } while(opcao != 6);
+    } while(opcao != 8);
 
     destroyQueue(&listaParticipantes);
     return 0;
+}
+
+void AdicionaContribuinte(ListaParticipantes *listaParticipantes, ListaContribuintes *listaContribuintes, int id) {
+    Participante* atual = listaParticipantes->primeiro;
+    bool encontrado = false;
+	bool anoConfirmado = true;
+	
+	
+    while (atual != NULL) {
+        if (atual->ID == id) {
+            encontrado = true;
+
+            Contribuinte *novoContribuinte = new Contribuinte();
+            novoContribuinte->IDParticipante = atual->ID;
+			
+			while(anoConfirmado)
+			{
+				system("cls");
+	            cout << "Ano de contribuição: ";
+    	        cin >> novoContribuinte->Ano;
+				
+				if(novoContribuinte->Ano < atual->AnoIngressao){
+					system("cls");
+					cout << "Você deve fornecer um ano maior ou igual ao ano de ingressão!" << endl;
+					system("pause");
+				}
+				else
+				{
+					anoConfirmado = false;
+				}
+			}
+            
+            system("cls");
+            cout << "Mês de contribuição: ";
+            cin >> novoContribuinte->Mes;
+
+            system("cls");
+            cout << "Valor da contribuição: ";
+            cin >> novoContribuinte->Valor;
+
+            enqueueContribuinte(listaContribuintes, novoContribuinte);
+
+            system("cls");
+            cout << "Contribuinte cadastrado com sucesso!" << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
+
+        atual = atual->prox;
+    }
+
+    if (!encontrado) {
+        cout << "Participante com o ID " << id << " não encontrado." << endl;
+    }
 }
 
 int PegaId(ListaParticipantes *lista) {
@@ -117,6 +227,29 @@ int PegaId(ListaParticipantes *lista) {
 
     return atual->ID;
 }
+
+//void AbrirArquivoTxtContribuidores(ListaContribuintes* lista, const string& nomeArquivo){
+//	ifstream arquivo(nomeArquivo.c_str());
+//    string linha;
+//
+//	if(arquivo.is_open()) {
+//        while (getline(arquivo, linha)) {
+//            if (linha.find("ID:") == 0) {
+//    			Contribuinte* novoContribuinte = new Contribuinte;
+//    			novoContribuinte->IDParticipante = atoi(linha.substr(4).c_str());
+//                getline(arquivo, linha); novoContribuinte->Ano = atoi(linha.substr(21).c_str());
+//                getline(arquivo, linha); novoContribuinte->Mes = atoi(linha.substr(21).c_str());
+//                getline(arquivo, linha); novoContribuinte->Valor = atoi(linha.substr(9).c_str());
+//    			novoContribuinte->prox = NULL;
+//    			enqueueContribuinte(lista, novoContribuinte);
+//			}	
+//		}
+//		arquivo.close();
+//        cout << "Dados do arquivo " << nomeArquivo << " foram lidos e adicionados à lista." << endl;
+//    } else {
+//        cout << "Erro ao abrir o arquivo " << nomeArquivo << endl;	
+//	}
+//}
 
 void AbrirArquivoTxt(ListaParticipantes *lista, const string& nomeArquivo){
     ifstream arquivo(nomeArquivo.c_str());
@@ -148,8 +281,16 @@ void initializeQueue(ListaParticipantes *lista) {
     lista->primeiro = NULL;
 }
 
+void initializeQueueCont(ListaContribuintes *lista) {
+    lista->primeiro = NULL;
+}
+
 bool isEmpty(ListaParticipantes *lista) {
     return (lista->primeiro == NULL);
+}
+
+bool isEmptyContribuinte(ListaContribuintes *lista){
+	return (lista->primeiro == NULL);
 }
 
 void enqueue(ListaParticipantes *lista, Participante* novoParticipante) {
@@ -165,6 +306,19 @@ void enqueue(ListaParticipantes *lista, Participante* novoParticipante) {
     }
 }
 
+void enqueueContribuinte(ListaContribuintes *lista, Contribuinte* novoContribuinte) {
+    novoContribuinte->prox = NULL;
+    if (isEmptyContribuinte(lista)) {
+        lista->primeiro = novoContribuinte;
+    } else {
+        Contribuinte* atual = lista->primeiro;
+        while (atual->prox != NULL) {
+            atual = atual->prox;
+        }
+        atual->prox = novoContribuinte;
+    }
+}
+
 void dequeue(ListaParticipantes *lista) {
     if (!isEmpty(lista)) {
         Participante* temp = lista->primeiro;
@@ -173,6 +327,29 @@ void dequeue(ListaParticipantes *lista) {
     } else {
         cout << "Erro: a lista está vazia." << endl;
     }
+}
+
+void dequeueContribuinte(ListaContribuintes *lista) {
+    if (!isEmptyContribuinte(lista)) {
+        Contribuinte* temp = lista->primeiro;
+        lista->primeiro = lista->primeiro->prox;
+        delete temp;
+    } else {
+        cout << "Erro: a lista está vazia." << endl;
+    }
+}
+
+void displayContribuinte(ListaContribuintes *lista){
+	if(!isEmptyContribuinte(lista)){
+		Contribuinte* atual = lista->primeiro;
+		cout << "Lista de contribuintes:" << endl;
+		while (atual != NULL){
+			cout << "ID do Contribuinte: " << atual->IDParticipante << ", Mês de contribuição: " << atual->Mes << ", ano de contribuição: " << atual->Ano << ", valor: R$" << atual->Valor << ",00" << endl;
+			atual = atual->prox;
+		}
+	}else {
+		cout << "A lista está vazia." << endl;
+	}
 }
 
 void displayQueue(ListaParticipantes *lista) {
@@ -211,24 +388,18 @@ void salvarDados(ListaParticipantes *lista, const string& nomeArquivo) {
     }
 }
 
-void carregarDados(ListaParticipantes *lista, const string& nomeArquivo) {
-    ifstream arquivo(nomeArquivo.c_str());
+void salvarDadosContribuidores(ListaContribuintes *lista, const string& nomeArquivo) {
+    cout << "Tentando salvar dados em: " << nomeArquivo << endl;
+    ofstream arquivo(nomeArquivo.c_str(), ios::out); 
     if (arquivo.is_open()) {
-        string linha;
-        while (getline(arquivo, linha)) {
-            if (linha.find("ID:") == 0) {
-                Participante* novoParticipante = new Participante;
-                novoParticipante->ID = atoi(linha.substr(4).c_str());
-                getline(arquivo, linha); novoParticipante->Nome = linha.substr(6);
-                getline(arquivo, linha); novoParticipante->Semestre = atoi(linha.substr(10).c_str());
-                getline(arquivo, linha); novoParticipante->AnoIngressao = atoi(linha.substr(18).c_str());
-                getline(arquivo, linha); novoParticipante->Curso = linha.substr(7);
-                novoParticipante->prox = NULL;
-                enqueue(lista, novoParticipante);
-            }
+        Contribuinte* atual = lista->primeiro;
+        while (atual != NULL) {
+            arquivo << "ID: " << atual->IDParticipante << "\n" << "Mês de contribuição: " << atual->Mes << "\n" << "ano de contribuição: " 
+			<< atual->Ano << "\n" << "valor: R$" << atual->Valor << endl;
+            atual = atual->prox;
         }
         arquivo.close();
-        cout << "Dados carregados com sucesso de " << nomeArquivo << endl;
+        cout << "Dados salvos com sucesso em " << nomeArquivo << endl;
     } else {
         cout << "Erro ao abrir o arquivo " << nomeArquivo << endl;
     }
