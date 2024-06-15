@@ -16,7 +16,7 @@ struct Participante {
     int AnoIngressao;
     string Curso;
     Participante* prox;
-    //bool contribuinte = false;
+    bool contribuinte = false;
 };
 
 struct Contribuinte {
@@ -26,6 +26,7 @@ struct Contribuinte {
     int Ano;
     float Valor;
     Contribuinte* prox;
+    string Curso;
 };
 
 struct ListaParticipantes {
@@ -40,7 +41,7 @@ struct ListaContribuintes {
 void AdicionaContribuinte(ListaParticipantes *lista, ListaContribuintes *cont, int id);
 int PegaId(ListaParticipantes *lista);
 void AbrirArquivoTxt(ListaParticipantes *lista, const string& nomeArquivo);
-//void AbrirArquivoTxtContribuidores(ListaContribuintes* lista, const string& nomeArquivo);
+void AbrirArquivoTxtContribuidores(ListaContribuintes* lista, const string& nomeArquivo);
 void initializeQueue(ListaParticipantes *lista);
 void initializeQueueCont(ListaContribuintes *lista);
 bool isEmpty(ListaParticipantes *lista);
@@ -63,11 +64,22 @@ int main() {
     ListaContribuintes listaContribuintes;
     initializeQueueCont(&listaContribuintes);
 	
+	ListaContribuintes ContribuintesDSM;
+	initializeQueueCont(&listaContribuintes);
+	
+	ListaContribuintes ContribuintesSI;
+	initializeQueueCont(&listaContribuintes);
+	
+	ListaContribuintes ContribuintesGE;
+	initializeQueueCont(&listaContribuintes);
+	
 	ListaParticipantes listaParticipantes;
     initializeQueue(&listaParticipantes);
     
+    
     AbrirArquivoTxt(&listaParticipantes, "participantes.txt");
-//	AbrirArquivoTxtContribuidores(&listaContribuintes, "participantes.txt");
+	AbrirArquivoTxtContribuidores(&listaContribuintes, "contribuintes.txt");
+	
 	
 	int idEditar = 0;
     int nextID = PegaId(&listaParticipantes) + 1;
@@ -160,33 +172,31 @@ int main() {
 void AdicionaContribuinte(ListaParticipantes *listaParticipantes, ListaContribuintes *listaContribuintes, int id) {
     Participante* atual = listaParticipantes->primeiro;
     bool encontrado = false;
-	bool anoConfirmado = true;
-	
-	
+    bool anoConfirmado = true;
+
     while (atual != NULL) {
         if (atual->ID == id) {
             encontrado = true;
 
             Contribuinte *novoContribuinte = new Contribuinte();
             novoContribuinte->IDParticipante = atual->ID;
-			
-			while(anoConfirmado)
-			{
-				system("cls");
-	            cout << "Ano de contribuição: ";
-    	        cin >> novoContribuinte->Ano;
-				
-				if(novoContribuinte->Ano < atual->AnoIngressao){
-					system("cls");
-					cout << "Você deve fornecer um ano maior ou igual ao ano de ingressão!" << endl;
-					system("pause");
-				}
-				else
-				{
-					anoConfirmado = false;
-				}
-			}
-            
+            atual->contribuinte = true;
+
+           
+            while (anoConfirmado) {
+                system("cls");
+                cout << "Ano de contribuição: ";
+                cin >> novoContribuinte->Ano;
+
+                if (novoContribuinte->Ano < atual->AnoIngressao) {
+                    system("cls");
+                    cout << "Você deve fornecer um ano maior ou igual ao ano de ingresso!" << endl;
+                    system("pause");
+                } else {
+                    anoConfirmado = false;
+                }
+            }
+
             system("cls");
             cout << "Mês de contribuição: ";
             cin >> novoContribuinte->Mes;
@@ -201,6 +211,35 @@ void AdicionaContribuinte(ListaParticipantes *listaParticipantes, ListaContribui
             cout << "Contribuinte cadastrado com sucesso!" << endl;
             system("pause");
             system("cls");
+
+            
+            ofstream arquivoCurso;
+            if (atual->Curso == "DSM") {
+                novoContribuinte->Curso = "DSM";
+                arquivoCurso.open("contribuintes_DSM.txt", ios::out | ios::app);
+            } else if (atual->Curso == "SI") {
+                novoContribuinte->Curso = "SI";
+                arquivoCurso.open("contribuintes_SI.txt", ios::out | ios::app);
+            } else if (atual->Curso == "GE") {
+                novoContribuinte->Curso = "GE";
+                arquivoCurso.open("contribuintes_GE.txt", ios::out | ios::app);
+            } else {
+                cout << "Curso não reconhecido para salvar o contribuinte." << endl;
+                break; 
+            }
+
+            if (arquivoCurso.is_open()) {
+                arquivoCurso << "ID: " << novoContribuinte->IDParticipante << "\n"
+                             << "Curso: " << novoContribuinte->Curso << "\n"
+                             << "Ano de contribuição: " << novoContribuinte->Ano << "\n"
+                             << "Mês de contribuição: " << novoContribuinte->Mes << "\n"
+                             << "Valor: " << novoContribuinte->Valor << "\n\n";
+                arquivoCurso.close();
+                cout << "Contribuinte salvo no arquivo do curso " << atual->Curso << " com sucesso." << endl;
+            } else {
+                cout << "Erro ao abrir arquivo para salvar contribuinte do curso " << atual->Curso << endl;
+            }
+
             break;
         }
 
@@ -228,28 +267,50 @@ int PegaId(ListaParticipantes *lista) {
     return atual->ID;
 }
 
-//void AbrirArquivoTxtContribuidores(ListaContribuintes* lista, const string& nomeArquivo){
-//	ifstream arquivo(nomeArquivo.c_str());
-//    string linha;
-//
-//	if(arquivo.is_open()) {
-//        while (getline(arquivo, linha)) {
-//            if (linha.find("ID:") == 0) {
-//    			Contribuinte* novoContribuinte = new Contribuinte;
-//    			novoContribuinte->IDParticipante = atoi(linha.substr(4).c_str());
-//                getline(arquivo, linha); novoContribuinte->Ano = atoi(linha.substr(21).c_str());
-//                getline(arquivo, linha); novoContribuinte->Mes = atoi(linha.substr(21).c_str());
-//                getline(arquivo, linha); novoContribuinte->Valor = atoi(linha.substr(9).c_str());
-//    			novoContribuinte->prox = NULL;
-//    			enqueueContribuinte(lista, novoContribuinte);
-//			}	
-//		}
-//		arquivo.close();
-//        cout << "Dados do arquivo " << nomeArquivo << " foram lidos e adicionados à lista." << endl;
-//    } else {
-//        cout << "Erro ao abrir o arquivo " << nomeArquivo << endl;	
-//	}
-//}
+void AbrirArquivoTxtContribuidores(ListaContribuintes* lista, const string& nomeArquivo) {
+    ifstream arquivo(nomeArquivo.c_str());
+    string linha;
+
+    if (arquivo.is_open()) {
+        while (getline(arquivo, linha)) {
+            if (linha.find("ID:") == 0) {
+                Contribuinte* novoContribuinte = new Contribuinte;
+                novoContribuinte->IDParticipante = atoi(linha.substr(4).c_str());
+
+                if (getline(arquivo, linha) && linha.size() >= 21)
+                    novoContribuinte->Mes = atoi(linha.substr(21).c_str());
+                else {
+                    cerr << "Erro ao ler o Mês de contribuição." << endl;
+                    delete novoContribuinte;
+                    continue;
+                }
+
+                if (getline(arquivo, linha) && linha.size() >= 21)
+                    novoContribuinte->Ano = atoi(linha.substr(21).c_str());
+                else {
+                    cerr << "Erro ao ler o Ano de contribuição." << endl;
+                    delete novoContribuinte;
+                    continue;
+                }
+
+                if (getline(arquivo, linha) && linha.size() >= 7)
+                    novoContribuinte->Valor = atoi(linha.substr(7).c_str());
+                else {
+                    cerr << "Erro ao ler o Valor." << endl;
+                    delete novoContribuinte;
+                    continue;
+                }
+
+                novoContribuinte->prox = NULL;
+                enqueueContribuinte(lista, novoContribuinte);
+            }
+        }
+        arquivo.close();
+        cout << "Dados do arquivo " << nomeArquivo << " foram lidos e adicionados à lista." << endl;
+    } else {
+        cout << "Erro ao abrir o arquivo " << nomeArquivo << endl;
+    }
+}
 
 void AbrirArquivoTxt(ListaParticipantes *lista, const string& nomeArquivo){
     ifstream arquivo(nomeArquivo.c_str());
@@ -344,7 +405,7 @@ void displayContribuinte(ListaContribuintes *lista){
 		Contribuinte* atual = lista->primeiro;
 		cout << "Lista de contribuintes:" << endl;
 		while (atual != NULL){
-			cout << "ID do Contribuinte: " << atual->IDParticipante << ", Mês de contribuição: " << atual->Mes << ", ano de contribuição: " << atual->Ano << ", valor: R$" << atual->Valor << ",00" << endl;
+			cout << "ID do Contribuinte: " << atual->IDParticipante << ", Mês de contribuição: " << atual->Mes << ", ano de contribuição: " << atual->Ano << ", valor: " << atual->Valor << ",00" << endl;
 			atual = atual->prox;
 		}
 	}else {
@@ -357,7 +418,9 @@ void displayQueue(ListaParticipantes *lista) {
         Participante* atual = lista->primeiro;
         cout << "Lista de Participantes:" << endl;
         while (atual != NULL) {
-            cout << "ID: " << atual->ID << ", Nome: " << atual->Nome << ", Semestre: " << atual->Semestre << ", Ano de Ingresso: " << atual->AnoIngressao << ", Curso: " << atual->Curso << endl;
+        	
+            cout << "ID: " << atual->ID << ", Nome: " << atual->Nome << ", Semestre: " << atual->Semestre 
+			<< ", Ano de Ingresso: " << atual->AnoIngressao << ", Curso: " << atual->Curso << endl;
             atual = atual->prox;
         }
     } else {
@@ -390,12 +453,14 @@ void salvarDados(ListaParticipantes *lista, const string& nomeArquivo) {
 
 void salvarDadosContribuidores(ListaContribuintes *lista, const string& nomeArquivo) {
     cout << "Tentando salvar dados em: " << nomeArquivo << endl;
-    ofstream arquivo(nomeArquivo.c_str(), ios::out); 
+    
+	ofstream arquivo(nomeArquivo.c_str(), ios::out); 
     if (arquivo.is_open()) {
         Contribuinte* atual = lista->primeiro;
         while (atual != NULL) {
             arquivo << "ID: " << atual->IDParticipante << "\n" << "Mês de contribuição: " << atual->Mes << "\n" << "ano de contribuição: " 
-			<< atual->Ano << "\n" << "valor: R$" << atual->Valor << endl;
+			<< atual->Ano << "\n" << "valor: " << atual->Valor << endl;
+			
             atual = atual->prox;
         }
         arquivo.close();

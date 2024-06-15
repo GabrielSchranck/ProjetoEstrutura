@@ -28,3 +28,9 @@ Semestre: 4
 Ano de Ingressão: 2022
 Curso: GE
 
+ID: 6
+Nome: Arthur
+Semestre: 1
+Ano de Ingressão: 2024
+Curso: DSM
+
